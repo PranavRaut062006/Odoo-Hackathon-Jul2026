@@ -310,7 +310,7 @@ sequenceDiagram
     alt Asset is 'Available'
         Backend->>MongoDB: Create Allocation (status: 'Active')
         Backend->>MongoDB: Update Asset Status to 'Allocated'
-        Backend-.>>LogAlert: Trigger logActivity() & createNotification()
+        Backend-->>LogAlert: Trigger logActivity() & createNotification()
         Backend-->>Frontend: HTTP 201 Created (ApiResponse)
         Frontend-->>Manager: Display success toast notification
     else Asset is Already Allocated
@@ -336,7 +336,7 @@ sequenceDiagram
     Backend->>MongoDB: Verify target Employee & Asset status
     MongoDB-->>Backend: Records verified
     Backend->>MongoDB: Create Transfer Request (status: 'Requested')
-    Backend-.>>LogAlert: Trigger logActivity() & createNotification()
+    Backend-->>LogAlert: Trigger logActivity() & createNotification()
     Backend-->>Frontend: HTTP 201 Created
     Frontend-->>Employee: Show pending request in timeline
 
@@ -348,7 +348,7 @@ sequenceDiagram
     Backend->>MongoDB: Close old Allocation (status: 'Returned')
     Backend->>MongoDB: Create new Allocation for target Employee
     Backend->>MongoDB: Update Asset ownership department/employee
-    Backend-.>>LogAlert: Trigger background updates
+    Backend-->>LogAlert: Trigger background updates
     Backend-->>Frontend: HTTP 200 OK
     Frontend-->>Approver: Refresh lists & update status badges
 ```
@@ -395,7 +395,7 @@ sequenceDiagram
     User->>Frontend: Submit maintenance report
     Frontend->>Backend: POST /api/v1/maintenance
     Backend->>MongoDB: Create request & update Asset status to 'Under Maintenance'
-    Backend-.>>LogAlert: Trigger activity log & admin alert
+    Backend-->>LogAlert: Trigger activity log & admin alert
     Backend-->>Frontend: HTTP 201 Created
     Frontend-->>User: Report confirmed & status updated
     
@@ -404,7 +404,7 @@ sequenceDiagram
     Manager->>Frontend: Mark maintenance resolved
     Frontend->>Backend: PUT /api/v1/maintenance/:id/resolve
     Backend->>MongoDB: Update request & set Asset status back to 'Available'
-    Backend-.>>LogAlert: Trigger activity log
+    Backend-->>LogAlert: Trigger activity log
     Backend-->>Frontend: HTTP 200 OK
     Frontend-->>Manager: Refresh lists
 ```
