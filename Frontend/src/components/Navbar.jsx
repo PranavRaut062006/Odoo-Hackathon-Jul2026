@@ -5,7 +5,7 @@ export const Navbar = () => {
     <>
     <div>
         <div>
-            <h3>Rushi.dev</h3>
+            <h3>Nitish.dev</h3>
         </div>
         <nav>
   <ul>
