@@ -9,6 +9,7 @@ const authRoutes = require('./routes/authRoutes');
 const departmentRoutes = require('./routes/departmentRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const employeeRoutes = require('./routes/employeeRoutes');
+const assetRoutes = require('./routes/assetRoutes');
 
 const app = express();
 
@@ -24,10 +25,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // Routes
-app.use('/api/auth', authRoutes);
+app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/departments', departmentRoutes);
 app.use('/api/v1/categories', categoryRoutes);
 app.use('/api/v1/employees', employeeRoutes);
+app.use('/api/v1/assets', assetRoutes);
 
 // Error Handling
 app.use(notFoundHandler);
