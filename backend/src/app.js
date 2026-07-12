@@ -15,6 +15,8 @@ const activityLogRoutes = require('./routes/activityLogRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const allocationRoutes = require('./routes/allocationRoutes');
 const transferRoutes = require('./routes/transferRoutes');
+const bookingRoutes = require('./routes/bookingRoutes');
+const maintenanceRoutes = require('./routes/maintenanceRoutes');
 
 const app = express();
 
@@ -40,6 +42,8 @@ app.use('/api/v1/activity', activityLogRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
 app.use('/api/v1/allocations', allocationRoutes);
 app.use('/api/v1/transfers', transferRoutes);
+app.use('/api/v1/bookings', bookingRoutes);
+app.use('/api/v1/maintenance', maintenanceRoutes);
 
 // Error Handling
 app.use(notFoundHandler);

@@ -62,7 +62,7 @@ const createAllocation = async (req, res, next) => {
           currentHolder = activeAllocation.employee;
         }
 
-        return { conflict: true, currentHolder };
+        return { conflict: true, currentHolder, status: asset.status };
       }
 
       const employee = session
@@ -130,9 +130,12 @@ const createAllocation = async (req, res, next) => {
     });
 
     if (result.conflict) {
+      const message = result.status === 'Under Maintenance'
+        ? 'Asset is currently Under Maintenance and cannot be allocated.'
+        : 'Asset is already allocated.';
       return res.status(409).json({
         success: false,
-        message: 'Asset is already allocated.',
+        message,
         currentHolder: result.currentHolder,
       });
     }
