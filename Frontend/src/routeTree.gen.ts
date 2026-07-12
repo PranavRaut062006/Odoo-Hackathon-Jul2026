@@ -12,7 +12,15 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
+import { Route as AppReportsRouteImport } from './routes/_app.reports'
+import { Route as AppProfileRouteImport } from './routes/_app.profile'
+import { Route as AppPreferencesRouteImport } from './routes/_app.preferences'
 import { Route as AppOrganizationRouteImport } from './routes/_app.organization'
+import { Route as AppNotificationsRouteImport } from './routes/_app.notifications'
+import { Route as AppMaintenanceRouteImport } from './routes/_app.maintenance'
+import { Route as AppBookingRouteImport } from './routes/_app.booking'
+import { Route as AppBillingRouteImport } from './routes/_app.billing'
+import { Route as AppAuditRouteImport } from './routes/_app.audit'
 import { Route as AppAllocationRouteImport } from './routes/_app.allocation'
 import { Route as AppAssetsIndexRouteImport } from './routes/_app.assets.index'
 import { Route as AppAssetsIdRouteImport } from './routes/_app.assets.$id'
@@ -31,9 +39,49 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppReportsRoute = AppReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppProfileRoute = AppProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPreferencesRoute = AppPreferencesRouteImport.update({
+  id: '/preferences',
+  path: '/preferences',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppOrganizationRoute = AppOrganizationRouteImport.update({
   id: '/organization',
   path: '/organization',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppNotificationsRoute = AppNotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppMaintenanceRoute = AppMaintenanceRouteImport.update({
+  id: '/maintenance',
+  path: '/maintenance',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppBookingRoute = AppBookingRouteImport.update({
+  id: '/booking',
+  path: '/booking',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppBillingRoute = AppBillingRouteImport.update({
+  id: '/billing',
+  path: '/billing',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAuditRoute = AppAuditRouteImport.update({
+  id: '/audit',
+  path: '/audit',
   getParentRoute: () => AppRoute,
 } as any)
 const AppAllocationRoute = AppAllocationRouteImport.update({
@@ -56,14 +104,30 @@ export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/login': typeof LoginRoute
   '/allocation': typeof AppAllocationRoute
+  '/audit': typeof AppAuditRoute
+  '/billing': typeof AppBillingRoute
+  '/booking': typeof AppBookingRoute
+  '/maintenance': typeof AppMaintenanceRoute
+  '/notifications': typeof AppNotificationsRoute
   '/organization': typeof AppOrganizationRoute
+  '/preferences': typeof AppPreferencesRoute
+  '/profile': typeof AppProfileRoute
+  '/reports': typeof AppReportsRoute
   '/assets/$id': typeof AppAssetsIdRoute
   '/assets/': typeof AppAssetsIndexRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/allocation': typeof AppAllocationRoute
+  '/audit': typeof AppAuditRoute
+  '/billing': typeof AppBillingRoute
+  '/booking': typeof AppBookingRoute
+  '/maintenance': typeof AppMaintenanceRoute
+  '/notifications': typeof AppNotificationsRoute
   '/organization': typeof AppOrganizationRoute
+  '/preferences': typeof AppPreferencesRoute
+  '/profile': typeof AppProfileRoute
+  '/reports': typeof AppReportsRoute
   '/': typeof AppIndexRoute
   '/assets/$id': typeof AppAssetsIdRoute
   '/assets': typeof AppAssetsIndexRoute
@@ -73,7 +137,15 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
   '/_app/allocation': typeof AppAllocationRoute
+  '/_app/audit': typeof AppAuditRoute
+  '/_app/billing': typeof AppBillingRoute
+  '/_app/booking': typeof AppBookingRoute
+  '/_app/maintenance': typeof AppMaintenanceRoute
+  '/_app/notifications': typeof AppNotificationsRoute
   '/_app/organization': typeof AppOrganizationRoute
+  '/_app/preferences': typeof AppPreferencesRoute
+  '/_app/profile': typeof AppProfileRoute
+  '/_app/reports': typeof AppReportsRoute
   '/_app/': typeof AppIndexRoute
   '/_app/assets/$id': typeof AppAssetsIdRoute
   '/_app/assets/': typeof AppAssetsIndexRoute
@@ -84,18 +156,47 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/allocation'
+    | '/audit'
+    | '/billing'
+    | '/booking'
+    | '/maintenance'
+    | '/notifications'
     | '/organization'
+    | '/preferences'
+    | '/profile'
+    | '/reports'
     | '/assets/$id'
     | '/assets/'
   fileRoutesByTo: FileRoutesByTo
   to:
-    '/login' | '/allocation' | '/organization' | '/' | '/assets/$id' | '/assets'
+    | '/login'
+    | '/allocation'
+    | '/audit'
+    | '/billing'
+    | '/booking'
+    | '/maintenance'
+    | '/notifications'
+    | '/organization'
+    | '/preferences'
+    | '/profile'
+    | '/reports'
+    | '/'
+    | '/assets/$id'
+    | '/assets'
   id:
     | '__root__'
     | '/_app'
     | '/login'
     | '/_app/allocation'
+    | '/_app/audit'
+    | '/_app/billing'
+    | '/_app/booking'
+    | '/_app/maintenance'
+    | '/_app/notifications'
     | '/_app/organization'
+    | '/_app/preferences'
+    | '/_app/profile'
+    | '/_app/reports'
     | '/_app/'
     | '/_app/assets/$id'
     | '/_app/assets/'
@@ -129,11 +230,67 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/reports': {
+      id: '/_app/reports'
+      path: '/reports'
+      fullPath: '/reports'
+      preLoaderRoute: typeof AppReportsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/profile': {
+      id: '/_app/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof AppProfileRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/preferences': {
+      id: '/_app/preferences'
+      path: '/preferences'
+      fullPath: '/preferences'
+      preLoaderRoute: typeof AppPreferencesRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/organization': {
       id: '/_app/organization'
       path: '/organization'
       fullPath: '/organization'
       preLoaderRoute: typeof AppOrganizationRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/notifications': {
+      id: '/_app/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof AppNotificationsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/maintenance': {
+      id: '/_app/maintenance'
+      path: '/maintenance'
+      fullPath: '/maintenance'
+      preLoaderRoute: typeof AppMaintenanceRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/booking': {
+      id: '/_app/booking'
+      path: '/booking'
+      fullPath: '/booking'
+      preLoaderRoute: typeof AppBookingRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/billing': {
+      id: '/_app/billing'
+      path: '/billing'
+      fullPath: '/billing'
+      preLoaderRoute: typeof AppBillingRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/audit': {
+      id: '/_app/audit'
+      path: '/audit'
+      fullPath: '/audit'
+      preLoaderRoute: typeof AppAuditRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/allocation': {
@@ -162,7 +319,15 @@ declare module '@tanstack/react-router' {
 
 interface AppRouteChildren {
   AppAllocationRoute: typeof AppAllocationRoute
+  AppAuditRoute: typeof AppAuditRoute
+  AppBillingRoute: typeof AppBillingRoute
+  AppBookingRoute: typeof AppBookingRoute
+  AppMaintenanceRoute: typeof AppMaintenanceRoute
+  AppNotificationsRoute: typeof AppNotificationsRoute
   AppOrganizationRoute: typeof AppOrganizationRoute
+  AppPreferencesRoute: typeof AppPreferencesRoute
+  AppProfileRoute: typeof AppProfileRoute
+  AppReportsRoute: typeof AppReportsRoute
   AppIndexRoute: typeof AppIndexRoute
   AppAssetsIdRoute: typeof AppAssetsIdRoute
   AppAssetsIndexRoute: typeof AppAssetsIndexRoute
@@ -170,7 +335,15 @@ interface AppRouteChildren {
 
 const AppRouteChildren: AppRouteChildren = {
   AppAllocationRoute: AppAllocationRoute,
+  AppAuditRoute: AppAuditRoute,
+  AppBillingRoute: AppBillingRoute,
+  AppBookingRoute: AppBookingRoute,
+  AppMaintenanceRoute: AppMaintenanceRoute,
+  AppNotificationsRoute: AppNotificationsRoute,
   AppOrganizationRoute: AppOrganizationRoute,
+  AppPreferencesRoute: AppPreferencesRoute,
+  AppProfileRoute: AppProfileRoute,
+  AppReportsRoute: AppReportsRoute,
   AppIndexRoute: AppIndexRoute,
   AppAssetsIdRoute: AppAssetsIdRoute,
   AppAssetsIndexRoute: AppAssetsIndexRoute,
