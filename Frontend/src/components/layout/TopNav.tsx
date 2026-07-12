@@ -25,14 +25,19 @@ const labels: Record<string, string> = {
   notifications: "Notifications",
 };
 
+import { useAuth } from "@/hooks/useAuth";
+
 export function TopNav({ onOpenMobile }: { onOpenMobile?: () => void }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const parts = pathname.split("/").filter(Boolean);
   const [dark, setDark] = useState(false);
+  const { user, logout } = useAuth();
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
   }, [dark]);
+
+  const initials = user?.name ? user.name.split(" ").map(n => n[0]).join("").toUpperCase() : "U";
 
   return (
     <header className="sticky top-0 z-30 h-16 border-b border-border glass">
@@ -82,12 +87,12 @@ export function TopNav({ onOpenMobile }: { onOpenMobile?: () => void }) {
             <DropdownMenuTrigger asChild>
               <button className="ml-1 flex items-center gap-2 rounded-full pl-1 pr-3 py-1 hover:bg-accent transition">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src="https://api.dicebear.com/9.x/notionists/svg?seed=RushikeshRathod" />
-                  <AvatarFallback>RR</AvatarFallback>
+                  <AvatarImage src={`https://api.dicebear.com/9.x/notionists/svg?seed=${user?.name || "User"}`} />
+                  <AvatarFallback>{initials}</AvatarFallback>
                 </Avatar>
                 <div className="hidden sm:block text-left leading-tight">
-                  <div className="text-xs font-semibold">Rushikesh Rathod</div>
-                  <div className="text-[10px] text-muted-foreground">Admin</div>
+                  <div className="text-xs font-semibold">{user?.name || "User"}</div>
+                  <div className="text-[10px] text-muted-foreground capitalize">{user?.role || "Employee"}</div>
                 </div>
               </button>
             </DropdownMenuTrigger>
@@ -97,15 +102,12 @@ export function TopNav({ onOpenMobile }: { onOpenMobile?: () => void }) {
               <DropdownMenuItem asChild>
                 <Link to="/profile" className="w-full cursor-pointer">Profile</Link>
               </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/preferences" className="w-full cursor-pointer">Preferences</Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem asChild>
-                <Link to="/billing" className="w-full cursor-pointer">Billing</Link>
-              </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem asChild>
-                <Link to="/login">Sign out</Link>
+              <DropdownMenuItem 
+                className="w-full cursor-pointer text-destructive focus:text-destructive" 
+                onClick={logout}
+              >
+                Sign out
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

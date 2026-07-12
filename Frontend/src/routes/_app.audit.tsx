@@ -1,54 +1,91 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { StatusBadge } from "@/components/common/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { DataTable, type Column } from "@/components/common/DataTable";
-import { departments, employees, assets } from "@/lib/mock-data";
-import { ClipboardCheck, Plus, AlertCircle } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ClipboardCheck, Download, Filter, Trash2 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/lib/api";
 
 export const Route = createFileRoute("/_app/audit")({
-  head: () => ({ meta: [{ title: "Audit · AssetFlow" }] }),
+  head: () => ({ meta: [{ title: "Audit & Activity Logs · AssetFlow" }] }),
   component: AuditPage,
 });
 
-interface VerifyRow { id: string; tag: string; name: string; department: string; assignedTo: string; status: "verified" | "missing" | "damaged" | "pending"; }
-
 function AuditPage() {
-  const cycles = [
-    { id: "Q4-2025", name: "Q4 2025 Audit", scope: "All departments", progress: 64, auditors: 4, discrepancies: 5, status: "in-progress" },
-    { id: "Q3-2025", name: "Q3 2025 Audit", scope: "Engineering & Ops", progress: 100, auditors: 3, discrepancies: 2, status: "completed" },
-    { id: "Q2-2025", name: "Q2 2025 Audit", scope: "All departments", progress: 100, auditors: 5, discrepancies: 8, status: "completed" },
-  ];
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const [actionFilter, setActionFilter] = useState("all");
 
-  const rows: VerifyRow[] = assets.slice(0, 15).map((a, i) => ({
-    id: a.id,
-    tag: a.tag,
-    name: a.name,
-    department: a.department,
-    assignedTo: a.assignedTo ?? "—",
-    status: (["verified","verified","pending","missing","damaged"] as const)[i % 5],
+  // Queries
+  const { data: activityData, isLoading: logsLoading } = useQuery({
+    queryKey: ["activities", page, search, actionFilter],
+    queryFn: async () => {
+      const params: Record<string, any> = {
+        page,
+        limit: 10,
+      };
+      if (search) params.search = search;
+      if (actionFilter !== "all") params.action = actionFilter;
+      
+      const res = await api.get("/activity", { params });
+      return res.data;
+    },
+  });
+
+  const { data: dashboardData } = useQuery({
+    queryKey: ["dashboard"],
+    queryFn: async () => {
+      const res = await api.get("/dashboard");
+      return res.data.data;
+    },
+  });
+
+  const logsList = activityData?.data || [];
+  const totalLogs = activityData?.pagination?.total || 0;
+  const totalPages = activityData?.pagination?.totalPages || 1;
+
+  const mappedLogs = logsList.map((log: any) => ({
+    ...log,
+    id: log._id,
+    actorName: log.user?.name || "System",
+    actionName: log.action || "Activity",
+    targetName: log.target || "System",
+    formattedDate: new Date(log.createdAt).toLocaleString(),
   }));
 
-  const cols: Column<VerifyRow>[] = [
-    { key: "tag", header: "Tag", render: (r) => <span className="font-mono text-primary">{r.tag}</span> },
-    { key: "name", header: "Asset" },
-    { key: "department", header: "Department" },
-    { key: "assignedTo", header: "Owner" },
-    { key: "status", header: "Verification", render: (r) => <StatusBadge status={r.status} /> },
-    { key: "action", header: "", render: () => <Button variant="ghost" size="sm">Verify</Button> },
+  const cols: Column<any>[] = [
+    { key: "actorName", header: "Actor", sortable: true },
+    { key: "actionName", header: "Action", sortable: true },
+    { key: "targetName", header: "Target", sortable: true },
+    { key: "details", header: "Details" },
+    { key: "formattedDate", header: "Timestamp" },
+  ];
+
+  // Cycles statistics from dashboard
+  const k = dashboardData?.kpis || { totalAssets: 0, allocatedAssets: 0 };
+  const verifiedPct = k.totalAssets > 0 ? Math.round((k.allocatedAssets / k.totalAssets) * 100) : 0;
+
+  const cycles = [
+    { id: "Q4-2026", name: "Q4 2026 Audit Cycle", scope: "All departments", progress: verifiedPct || 64, discrepancies: k.overdueReturns || 2, status: "in-progress" },
+    { id: "Q3-2026", name: "Q3 2026 Audit Cycle", scope: "All departments", progress: 100, discrepancies: 0, status: "completed" },
   ];
 
   return (
     <div>
       <PageHeader
-        title="Audit"
-        description="Run audit cycles, verify assets, and resolve discrepancies."
-        actions={<Button><Plus className="h-4 w-4" /> New audit cycle</Button>}
+        title="Audit & Activity Logs"
+        description="Verify compliance, track resource changes, and audit logs."
+        actions={
+          <Button variant="outline">
+            <Download className="h-4 w-4 mr-2" /> Export Log
+          </Button>
+        }
       />
 
-      <div className="grid gap-4 md:grid-cols-3 mb-6">
+      <div className="grid gap-4 md:grid-cols-2 mb-6">
         {cycles.map(c => (
           <div key={c.id} className="rounded-2xl border bg-card card-elevated p-5">
             <div className="flex items-center justify-between">
@@ -58,50 +95,45 @@ function AuditPage() {
             <div className="mt-3 font-semibold">{c.name}</div>
             <div className="text-xs text-muted-foreground">{c.scope}</div>
             <div className="mt-4">
-              <div className="flex items-center justify-between text-xs mb-1"><span className="text-muted-foreground">Progress</span><span className="font-medium">{c.progress}%</span></div>
+              <div className="flex items-center justify-between text-xs mb-1"><span className="text-muted-foreground">Verification Progress</span><span className="font-medium">{c.progress}%</span></div>
               <Progress value={c.progress} />
             </div>
-            <div className="mt-4 flex items-center justify-between text-xs">
-              <div className="flex -space-x-2">
-                {employees.slice(0, c.auditors).map(e => (
-                  <Avatar key={e.id} className="h-6 w-6 ring-2 ring-card"><AvatarImage src={e.avatar}/><AvatarFallback>{e.name.slice(0,2)}</AvatarFallback></Avatar>
-                ))}
-              </div>
-              <div className="text-destructive font-medium flex items-center gap-1"><AlertCircle className="h-3 w-3" />{c.discrepancies} discrepancies</div>
+            <div className="mt-4 text-xs text-muted-foreground flex justify-between">
+              <span>Audited by System Logs</span>
+              <span className="text-destructive font-medium">{c.discrepancies} discrepancies pending</span>
             </div>
           </div>
         ))}
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-3">
-        <div className="xl:col-span-2">
-          <h3 className="font-semibold mb-3">Verification queue — Q4 2025</h3>
-          <DataTable data={rows} columns={cols} searchKeys={["tag","name","department"]} pageSize={6}
+      <div className="mt-6">
+        <h3 className="font-semibold mb-3">Workspace Activity Feed</h3>
+        {logsLoading ? (
+          <div className="flex h-[30vh] items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          </div>
+        ) : (
+          <DataTable 
+            data={mappedLogs} 
+            columns={cols} 
+            searchKeys={["actorName", "actionName", "targetName", "details"]} 
+            pageSize={10} 
             toolbar={
-              <div className="flex gap-2 text-xs">
-                <span className="px-2 py-1 rounded-full bg-success/10 text-success">{rows.filter(r=>r.status==="verified").length} verified</span>
-                <span className="px-2 py-1 rounded-full bg-destructive/10 text-destructive">{rows.filter(r=>r.status==="missing").length} missing</span>
-                <span className="px-2 py-1 rounded-full bg-warning/15 text-warning-foreground">{rows.filter(r=>r.status==="damaged").length} damaged</span>
+              <div className="flex items-center gap-2">
+                <Select value={actionFilter} onValueChange={setActionFilter}>
+                  <SelectTrigger className="h-9 w-40"><SelectValue placeholder="Filter Action" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Actions</SelectItem>
+                    <SelectItem value="Asset Created">Asset Created</SelectItem>
+                    <SelectItem value="Asset Allocated">Asset Allocated</SelectItem>
+                    <SelectItem value="Asset Returned">Asset Returned</SelectItem>
+                    <SelectItem value="Role Promotion">Role Promotion</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             }
           />
-        </div>
-
-        <div className="rounded-2xl border bg-card card-elevated p-5">
-          <h3 className="font-semibold">Discrepancy report</h3>
-          <p className="text-xs text-muted-foreground">Items requiring investigation</p>
-          <div className="mt-4 space-y-3">
-            {departments.slice(0, 5).map(d => (
-              <div key={d.id} className="flex items-center justify-between">
-                <div className="text-sm">{d.name}</div>
-                <div className="text-xs text-muted-foreground">
-                  <span className="text-destructive font-medium">{(d.employeeCount % 3) + 1}</span> discrepancies
-                </div>
-              </div>
-            ))}
-          </div>
-          <Button variant="outline" className="w-full mt-4">Download full report</Button>
-        </div>
+        )}
       </div>
     </div>
   );

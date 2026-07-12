@@ -8,8 +8,30 @@ export const Route = createFileRoute("/_app")({
   component: AppLayout,
 });
 
+import { useAuth } from "@/hooks/useAuth";
+import { useEffect } from "react";
+import { useNavigate } from "@tanstack/react-router";
+
 function AppLayout() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { user, isLoading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem("assetflow_token");
+    if (!isLoading && !token) {
+      navigate({ to: "/login" });
+    }
+  }, [user, isLoading, navigate]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex bg-background">
       <AppSidebar />

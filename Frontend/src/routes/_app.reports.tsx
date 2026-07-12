@@ -6,7 +6,8 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   LineChart, Line, PieChart, Pie, Cell, Legend,
 } from "recharts";
-import { departments, assets, maintenance, categories } from "@/lib/mock-data";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/lib/api";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_app/reports")({
@@ -15,20 +16,85 @@ export const Route = createFileRoute("/_app/reports")({
 });
 
 function ReportsPage() {
-  const deptData = departments.map(d => ({
+  // Queries
+  const { data: dashboardData, isLoading: dashboardLoading } = useQuery({
+    queryKey: ["dashboard"],
+    queryFn: async () => {
+      const res = await api.get("/dashboard");
+      return res.data.data;
+    },
+  });
+
+  const { data: departmentsData, isLoading: deptsLoading } = useQuery({
+    queryKey: ["departments"],
+    queryFn: async () => {
+      const res = await api.get("/departments");
+      return res.data.data.departments || [];
+    },
+  });
+
+  const { data: categoriesData, isLoading: catsLoading } = useQuery({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      const res = await api.get("/categories");
+      return res.data.data.categories || [];
+    },
+  });
+
+  const { data: maintenanceData, isLoading: maintLoading } = useQuery({
+    queryKey: ["maintenance-requests"],
+    queryFn: async () => {
+      const res = await api.get("/maintenance");
+      return res.data.data.requests || res.data.data || [];
+    },
+  });
+
+  const { data: assetsData, isLoading: assetsLoading } = useQuery({
+    queryKey: ["assets"],
+    queryFn: async () => {
+      const res = await api.get("/assets", { params: { limit: 100 } });
+      return res.data.data.assets || [];
+    },
+  });
+
+  if (dashboardLoading || deptsLoading || catsLoading || maintLoading || assetsLoading) {
+    return (
+      <div className="flex h-[50vh] items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  const activeAssets = assetsData || [];
+  const activeDepts = departmentsData || [];
+  const activeCats = categoriesData || [];
+  const activeMaint = maintenanceData || [];
+
+  const deptData = activeDepts.map((d: any) => ({
     name: d.code,
-    assets: assets.filter(a => a.department === d.name).length,
-    allocated: assets.filter(a => a.department === d.name && a.status === "allocated").length,
+    assets: activeAssets.filter((a: any) => a.department?._id === d._id).length,
+    allocated: activeAssets.filter((a: any) => a.department?._id === d._id && a.status === "Allocated").length,
   }));
+
   const utilData = Array.from({ length: 12 }, (_, i) => ({
     month: ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][i],
     utilization: 55 + Math.round(Math.sin(i / 2) * 15 + i),
   }));
-  const maintData = ["low","medium","high","critical"].map(p => ({
+
+  const priorities = ["Low", "Medium", "High", "Critical"];
+  const priorityColors: Record<string, string> = {
+    Low: "var(--muted-foreground)",
+    Medium: "var(--info)",
+    High: "var(--warning)",
+    Critical: "var(--destructive)",
+  };
+
+  const maintData = priorities.map(p => ({
     name: p,
-    value: maintenance.filter(m => m.priority === p).length,
-    color: p === "critical" ? "var(--destructive)" : p === "high" ? "var(--warning)" : p === "medium" ? "var(--info)" : "var(--muted-foreground)",
+    value: activeMaint.filter((m: any) => m.priority === p).length,
+    color: priorityColors[p],
   }));
+
   const heat = Array.from({ length: 7 }, (_, d) => Array.from({ length: 10 }, (_, h) => Math.round(Math.random() * 8)));
 
   return (
@@ -113,15 +179,15 @@ function ReportsPage() {
                 <div key={h} className="text-[10px] text-muted-foreground text-center">{h+8}</div>
               ))}
               {["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map((d, di) => (
-                <>
-                  <div key={`d-${d}`} className="text-[10px] text-muted-foreground pr-1">{d}</div>
+                <div key={d} className="contents">
+                  <div className="text-[10px] text-muted-foreground pr-1">{d}</div>
                   {heat[di].map((v, hi) => (
                     <div key={`${di}-${hi}`} className="h-6 m-0.5 rounded"
                       style={{ background: `color-mix(in oklab, var(--primary) ${v * 12}%, transparent)` }}
                       title={`${v} bookings`}
                     />
                   ))}
-                </>
+                </div>
               ))}
             </div>
           </div>
@@ -131,11 +197,11 @@ function ReportsPage() {
       <div className="mt-4 rounded-2xl border bg-card card-elevated p-5">
         <h3 className="font-semibold mb-3">Category breakdown</h3>
         <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-          {categories.map(c => {
-            const count = assets.filter(a => a.category === c.name).length;
-            const pct = Math.round((count / assets.length) * 100);
+          {activeCats.map((c: any) => {
+            const count = activeAssets.filter((a: any) => a.category?._id === c._id).length;
+            const pct = activeAssets.length > 0 ? Math.round((count / activeAssets.length) * 100) : 0;
             return (
-              <div key={c.id} className="rounded-xl border p-4">
+              <div key={c._id} className="rounded-xl border p-4">
                 <div className="flex items-center justify-between">
                   <div className="text-sm font-medium">{c.name}</div>
                   <div className="text-xs font-semibold">{count}</div>

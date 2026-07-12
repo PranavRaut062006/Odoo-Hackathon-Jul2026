@@ -54,7 +54,35 @@ export function AuthShell({ title, subtitle, children, footer }: { title: string
   );
 }
 
+import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { api } from "@/lib/api";
+import { toast } from "sonner";
+
 function LoginPage() {
+  const [email, setEmail] = useState("rushikesh@assetflow.co");
+  const [password, setPassword] = useState("demo1234");
+  const queryClient = useQueryClient();
+
+  const loginMutation = useMutation({
+    mutationFn: async () => {
+      const response = await api.post("/auth/login", { email, password });
+      return response.data.data;
+    },
+    onSuccess: (data) => {
+      localStorage.setItem("assetflow_token", data.token);
+      localStorage.setItem("assetflow_user", JSON.stringify(data));
+      queryClient.setQueryData(["user"], data);
+      toast.success("Welcome back, " + data.name);
+      window.location.href = "/";
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    loginMutation.mutate();
+  };
+
   return (
     <AuthShell
       title="Welcome back"
@@ -63,23 +91,38 @@ function LoginPage() {
     >
       <form
         className="space-y-4"
-        onSubmit={(e) => { e.preventDefault(); window.location.href = "/"; }}
+        onSubmit={handleSubmit}
       >
         <div className="grid gap-1.5">
           <Label htmlFor="email">Work email</Label>
-          <Input id="email" type="email" required placeholder="you@company.com" defaultValue="rushikesh@assetflow.co" />
+          <Input 
+            id="email" 
+            type="email" 
+            required 
+            placeholder="you@company.com" 
+            value={email} 
+            onChange={(e) => setEmail(e.target.value)} 
+          />
         </div>
         <div className="grid gap-1.5">
           <div className="flex items-center justify-between">
             <Label htmlFor="password">Password</Label>
             <Link to="/forgot-password" className="text-xs text-primary hover:underline">Forgot?</Link>
           </div>
-          <Input id="password" type="password" required defaultValue="demo1234" />
+          <Input 
+            id="password" 
+            type="password" 
+            required 
+            value={password} 
+            onChange={(e) => setPassword(e.target.value)} 
+          />
         </div>
         <label className="flex items-center gap-2 text-sm">
           <Checkbox defaultChecked /> Keep me signed in
         </label>
-        <Button type="submit" className="w-full">Sign in</Button>
+        <Button type="submit" className="w-full" disabled={loginMutation.isPending}>
+          {loginMutation.isPending ? "Signing in..." : "Sign in"}
+        </Button>
         <Button type="button" variant="outline" className="w-full">Continue with SSO</Button>
       </form>
     </AuthShell>
