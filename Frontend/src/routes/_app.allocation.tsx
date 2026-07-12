@@ -32,7 +32,7 @@ function AllocationPage() {
 
   // Queries
   const { data: assetsData } = useQuery({
-    queryKey: ["assets"],
+    queryKey: ["assets-allocation-list"],
     queryFn: async () => {
       const res = await api.get("/assets", { params: { limit: 100 } });
       return res.data.data.assets || [];
@@ -40,7 +40,7 @@ function AllocationPage() {
   });
 
   const { data: employeesData } = useQuery({
-    queryKey: ["employees"],
+    queryKey: ["employees-allocation-list"],
     queryFn: async () => {
       const res = await api.get("/employees");
       return res.data.data.employees || [];
@@ -48,7 +48,7 @@ function AllocationPage() {
   });
 
   const { data: transfersData, isLoading: transfersLoading } = useQuery({
-    queryKey: ["transfers"],
+    queryKey: ["transfers-allocation-list"],
     queryFn: async () => {
       const res = await api.get("/transfers");
       return res.data.data.transfers || [];
@@ -75,8 +75,8 @@ function AllocationPage() {
   const allocateMutation = useMutation({
     mutationFn: async (payload: any) => api.post("/allocations", payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["assets"] });
-      queryClient.invalidateQueries({ queryKey: ["transfers"] });
+      queryClient.invalidateQueries({ queryKey: ["assets-allocation-list"] });
+      queryClient.invalidateQueries({ queryKey: ["transfers-allocation-list"] });
       toast.success("Asset allocated successfully");
       setAssetId("");
       setEmployeeId("");
@@ -88,8 +88,8 @@ function AllocationPage() {
   const transferMutation = useMutation({
     mutationFn: async (payload: any) => api.post("/transfers", payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["assets"] });
-      queryClient.invalidateQueries({ queryKey: ["transfers"] });
+      queryClient.invalidateQueries({ queryKey: ["assets-allocation-list"] });
+      queryClient.invalidateQueries({ queryKey: ["transfers-allocation-list"] });
       toast.success("Transfer request submitted successfully");
       setAssetId("");
       setEmployeeId("");
@@ -100,8 +100,8 @@ function AllocationPage() {
   const approveTransferMutation = useMutation({
     mutationFn: async (id: string) => api.put(`/transfers/${id}/approve`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["assets"] });
-      queryClient.invalidateQueries({ queryKey: ["transfers"] });
+      queryClient.invalidateQueries({ queryKey: ["assets-allocation-list"] });
+      queryClient.invalidateQueries({ queryKey: ["transfers-allocation-list"] });
       toast.success("Transfer request approved");
     },
   });
@@ -109,7 +109,7 @@ function AllocationPage() {
   const rejectTransferMutation = useMutation({
     mutationFn: async (id: string) => api.put(`/transfers/${id}/reject`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["transfers"] });
+      queryClient.invalidateQueries({ queryKey: ["transfers-allocation-list"] });
       toast.success("Transfer request rejected");
     },
   });

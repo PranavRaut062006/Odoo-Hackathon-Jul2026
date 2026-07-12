@@ -18,7 +18,11 @@ const createAssetValidator = [
   body('condition').notEmpty().withMessage('Condition is required').trim(),
   body('acquisitionDate').isISO8601().toDate().withMessage('Valid Acquisition Date is required'),
   body('acquisitionCost').isNumeric().withMessage('Acquisition Cost must be a number'),
-  body('department').optional({ checkFalsy: true }).isMongoId().withMessage('Valid Department ID must be provided if included'),
+  body('department')
+    .customSanitizer(val => val === 'none' ? null : val)
+    .optional({ checkFalsy: true })
+    .isMongoId()
+    .withMessage('Valid Department ID must be provided if included'),
   body('bookable').optional().isBoolean().withMessage('Bookable must be a boolean'),
   body('photo').optional().isURL().withMessage('Photo must be a valid URL'),
   body('documents').optional().isArray().withMessage('Documents must be an array'),
@@ -33,7 +37,11 @@ const updateAssetValidator = [
   body('condition').optional().notEmpty().withMessage('Condition cannot be empty').trim(),
   body('acquisitionDate').optional().isISO8601().toDate().withMessage('Valid Acquisition Date is required'),
   body('acquisitionCost').optional().isNumeric().withMessage('Acquisition Cost must be a number'),
-  body('department').optional({ checkFalsy: true }).isMongoId().withMessage('Valid Department ID must be provided if included'),
+  body('department')
+    .customSanitizer(val => val === 'none' ? null : val)
+    .optional({ checkFalsy: true })
+    .isMongoId()
+    .withMessage('Valid Department ID must be provided if included'),
   body('bookable').optional().isBoolean().withMessage('Bookable must be a boolean'),
   body('photo').optional().isURL().withMessage('Photo must be a valid URL'),
   body('documents').optional().isArray().withMessage('Documents must be an array'),

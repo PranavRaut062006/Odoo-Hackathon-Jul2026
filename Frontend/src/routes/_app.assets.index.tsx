@@ -41,7 +41,7 @@ function AssetsPage() {
 
   // Queries
   const { data: categoriesData } = useQuery({
-    queryKey: ["categories"],
+    queryKey: ["categories-all-list"],
     queryFn: async () => {
       const res = await api.get("/categories");
       return res.data.data.categories || [];
@@ -49,7 +49,7 @@ function AssetsPage() {
   });
 
   const { data: departmentsData } = useQuery({
-    queryKey: ["departments"],
+    queryKey: ["departments-all-list"],
     queryFn: async () => {
       const res = await api.get("/departments");
       return res.data.data.departments || [];
@@ -58,7 +58,7 @@ function AssetsPage() {
 
   // Query assets based on filters
   const { data: assetsData, isLoading: assetsLoading } = useQuery({
-    queryKey: ["assets", cat, dep, stat],
+    queryKey: ["assets-all-list", cat, dep, stat],
     queryFn: async () => {
       const params: Record<string, string> = {};
       if (cat !== "all") params.category = cat;
@@ -74,7 +74,7 @@ function AssetsPage() {
   const createAssetMutation = useMutation({
     mutationFn: async (payload: any) => api.post("/assets", payload),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["assets"] });
+      queryClient.invalidateQueries({ queryKey: ["assets-all-list"] });
       toast.success("Asset registered successfully");
       setDrawer(false);
       // Reset form

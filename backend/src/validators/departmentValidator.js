@@ -49,9 +49,10 @@ const createDepartmentValidator = [
       return true;
     }),
   body('parentDepartment')
+    .customSanitizer(val => val === 'none' || val === '' ? null : val)
     .optional({ nullable: true })
     .custom(async (value) => {
-      if (!value || value === '') return true;
+      if (!value) return true;
       if (!mongoose.Types.ObjectId.isValid(value)) {
         throw new Error('Invalid parentDepartment ID');
       }
@@ -62,9 +63,10 @@ const createDepartmentValidator = [
       return true;
     }),
   body('departmentHead')
+    .customSanitizer(val => val === 'none' || val === '' ? null : val)
     .optional({ nullable: true })
     .custom(async (value) => {
-      if (!value || value === '') return true;
+      if (!value) return true;
       if (!mongoose.Types.ObjectId.isValid(value)) {
         throw new Error('Invalid departmentHead ID');
       }
@@ -115,9 +117,10 @@ const updateDepartmentValidator = [
       return true;
     }),
   body('parentDepartment')
+    .customSanitizer(val => val === 'none' || val === '' ? null : val)
     .optional({ nullable: true })
     .custom(async (value, { req }) => {
-      if (!value || value === '') return true;
+      if (!value) return true;
       if (!mongoose.Types.ObjectId.isValid(value)) {
         throw new Error('Invalid parentDepartment ID');
       }
@@ -131,9 +134,10 @@ const updateDepartmentValidator = [
       return true;
     }),
   body('departmentHead')
+    .customSanitizer(val => val === 'none' || val === '' ? null : val)
     .optional({ nullable: true })
     .custom(async (value, { req }) => {
-      if (!value || value === '') return true;
+      if (!value) return true;
       if (!mongoose.Types.ObjectId.isValid(value)) {
         throw new Error('Invalid departmentHead ID');
       }

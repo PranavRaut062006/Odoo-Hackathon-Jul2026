@@ -18,11 +18,12 @@ const signup = async (req, res, next) => {
       throw new ApiError(400, 'User with this email already exists');
     }
 
-    // Role and status will take default values from the schema
+    const isFirstUser = (await User.countDocuments({})) === 0;
     const user = await User.create({
       name,
       email,
       password,
+      role: isFirstUser ? 'Admin' : 'Employee',
     });
 
     const token = generateToken(user._id);

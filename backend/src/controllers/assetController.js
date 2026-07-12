@@ -1,6 +1,7 @@
 const Asset = require('../models/Asset');
 const AssetCategory = require('../models/AssetCategory');
 const Department = require('../models/Department');
+const Allocation = require('../models/Allocation');
 const ApiError = require('../utils/ApiError');
 const ApiResponse = require('../utils/ApiResponse');
 const { logActivity } = require('../utils/logger');
@@ -124,6 +125,25 @@ const getAssets = async (req, res, next) => {
       .populate('category', 'name description')
       .populate('department', 'name code');
 
+    // Fetch active allocations to populate assignedTo
+    const activeAllocations = await Allocation.find({
+      asset: { $in: assets.map(a => a._id) },
+      status: 'Active'
+    }).populate('employee', 'name');
+
+    const allocationMap = {};
+    activeAllocations.forEach(alloc => {
+      if (alloc.employee) {
+        allocationMap[alloc.asset.toString()] = alloc.employee.name;
+      }
+    });
+
+    const assetsWithAssigned = assets.map(asset => {
+      const assetObj = asset.toObject();
+      assetObj.assignedTo = allocationMap[asset._id.toString()] || null;
+      return assetObj;
+    });
+
     const paginationMetadata = {
       total: totalAssets,
       page: pageNumber,
@@ -131,12 +151,13 @@ const getAssets = async (req, res, next) => {
       totalPages: Math.ceil(totalAssets / limitNumber),
     };
 
-    res.status(200).json({
-      success: true,
-      message: 'Assets fetched successfully',
-      data: assets,
-      pagination: paginationMetadata,
-    });
+    res.status(200).json(
+      new ApiResponse(
+        200,
+        { assets: assetsWithAssigned, pagination: paginationMetadata },
+        'Assets fetched successfully'
+      )
+    );
   } catch (error) {
     next(error);
   }

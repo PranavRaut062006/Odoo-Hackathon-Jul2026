@@ -61,7 +61,7 @@ function AssetDetail() {
   });
 
   const { data: employeesData } = useQuery({
-    queryKey: ["employees"],
+    queryKey: ["employees-detail-list"],
     queryFn: async () => {
       const res = await api.get("/employees");
       return res.data.data.employees || [];

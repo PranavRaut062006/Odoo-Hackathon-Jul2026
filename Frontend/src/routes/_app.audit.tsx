@@ -8,6 +8,7 @@ import { DataTable, type Column } from "@/components/common/DataTable";
 import { ClipboardCheck, Download, Filter, Trash2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export const Route = createFileRoute("/_app/audit")({
   head: () => ({ meta: [{ title: "Audit & Activity Logs · AssetFlow" }] }),
@@ -52,7 +53,8 @@ function AuditPage() {
     id: log._id,
     actorName: log.user?.name || "System",
     actionName: log.action || "Activity",
-    targetName: log.target || "System",
+    targetName: log.entity || "System",
+    details: log.description || "—",
     formattedDate: new Date(log.createdAt).toLocaleString(),
   }));
 
