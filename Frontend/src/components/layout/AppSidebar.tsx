@@ -26,8 +26,21 @@ const nav: NavItem[] = [
   { to: "/notifications", label: "Notifications", icon: Bell },
 ];
 
+import { useAuth } from "@/hooks/useAuth";
+
 export function AppSidebar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { user } = useAuth();
+
+  const filteredNav = nav.filter((item) => {
+    if (item.to === "/organization") {
+      return user?.role === "Admin";
+    }
+    if (item.to === "/allocation") {
+      return user?.role === "Admin" || user?.role === "Asset Manager";
+    }
+    return true;
+  });
 
   return (
     <aside className="hidden lg:flex flex-col w-64 shrink-0 border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
@@ -45,7 +58,7 @@ export function AppSidebar() {
         <div className="px-2 pt-2 pb-1 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
           Workspace
         </div>
-        {nav.map((item) => {
+        {filteredNav.map((item) => {
           const active = item.exact ? pathname === item.to : pathname.startsWith(item.to);
           const Icon = item.icon;
           return (

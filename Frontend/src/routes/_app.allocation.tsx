@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { DataTable, type Column } from "@/components/common/DataTable";
@@ -13,6 +13,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAuth } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/_app/allocation")({
   head: () => ({ meta: [{ title: "Allocation & Transfer · AssetFlow" }] }),
@@ -20,6 +21,25 @@ export const Route = createFileRoute("/_app/allocation")({
 });
 
 function AllocationPage() {
+  const { user } = useAuth();
+
+  if (user?.role !== "Admin" && user?.role !== "Asset Manager") {
+    return (
+      <div className="flex flex-col items-center justify-center h-[60vh] text-center px-4">
+        <div className="h-16 w-16 bg-destructive/10 text-destructive rounded-full flex items-center justify-center mb-4">
+          <ArrowRightLeft className="h-8 w-8" />
+        </div>
+        <h3 className="text-xl font-bold tracking-tight">Access Denied</h3>
+        <p className="text-muted-foreground mt-1 max-w-sm">
+          You do not have permission to view or manage asset allocations and transfers. Please contact your system administrator.
+        </p>
+        <Button asChild className="mt-4" variant="outline">
+          <Link to="/">Back to Dashboard</Link>
+        </Button>
+      </div>
+    );
+  }
+
   const queryClient = useQueryClient();
   const [assetId, setAssetId] = useState("");
   const [employeeId, setEmployeeId] = useState("");

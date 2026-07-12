@@ -248,7 +248,7 @@ function DashboardPage() {
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-medium truncate">{n.title}</span>
-                  <StatusBadge status={n.priority} />
+                  <StatusBadge status={n.type === "Error" ? "high" : "low"} />
                 </div>
                 <p className="text-xs text-muted-foreground mt-0.5">{n.message}</p>
               </div>

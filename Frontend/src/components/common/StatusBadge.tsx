@@ -27,8 +27,8 @@ const map: Record<string, string> = {
   poor: "bg-destructive/10 text-destructive ring-destructive/20",
 };
 
-export function StatusBadge({ status }: { status: string }) {
-  const key = status.toLowerCase();
+export function StatusBadge({ status }: { status?: string }) {
+  const key = (status || "low").toLowerCase();
   return (
     <span
       className={cn(
@@ -37,7 +37,7 @@ export function StatusBadge({ status }: { status: string }) {
       )}
     >
       <span className="h-1.5 w-1.5 rounded-full bg-current opacity-70" />
-      {status.replace("-", " ")}
+      {(status || "low").replace("-", " ")}
     </span>
   );
 }

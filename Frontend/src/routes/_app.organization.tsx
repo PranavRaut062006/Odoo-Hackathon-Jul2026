@@ -16,12 +16,33 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
+import { useAuth } from "@/hooks/useAuth";
+
 export const Route = createFileRoute("/_app/organization")({
   head: () => ({ meta: [{ title: "Organization · AssetFlow" }] }),
   component: OrgPage,
 });
 
 function OrgPage() {
+  const { user } = useAuth();
+
+  if (user?.role !== "Admin") {
+    return (
+      <div className="flex flex-col items-center justify-center h-[60vh] text-center px-4">
+        <div className="h-16 w-16 bg-destructive/10 text-destructive rounded-full flex items-center justify-center mb-4">
+          <Building2 className="h-8 w-8" />
+        </div>
+        <h3 className="text-xl font-bold tracking-tight">Access Denied</h3>
+        <p className="text-muted-foreground mt-1 max-w-sm">
+          You do not have permission to view or manage organization settings. Please contact your system administrator.
+        </p>
+        <Button asChild className="mt-4" variant="outline">
+          <Link to="/">Back to Dashboard</Link>
+        </Button>
+      </div>
+    );
+  }
+
   const [tab, setTab] = useState("departments");
   const queryClient = useQueryClient();
 

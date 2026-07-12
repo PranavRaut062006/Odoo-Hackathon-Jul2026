@@ -18,7 +18,7 @@ export const Route = createFileRoute("/_app/reports")({
 function ReportsPage() {
   // Queries
   const { data: dashboardData, isLoading: dashboardLoading } = useQuery({
-    queryKey: ["dashboard"],
+    queryKey: ["dashboard-reports"],
     queryFn: async () => {
       const res = await api.get("/dashboard");
       return res.data.data;
@@ -26,7 +26,7 @@ function ReportsPage() {
   });
 
   const { data: departmentsData, isLoading: deptsLoading } = useQuery({
-    queryKey: ["departments"],
+    queryKey: ["departments-reports-list"],
     queryFn: async () => {
       const res = await api.get("/departments");
       return res.data.data.departments || [];
@@ -34,7 +34,7 @@ function ReportsPage() {
   });
 
   const { data: categoriesData, isLoading: catsLoading } = useQuery({
-    queryKey: ["categories"],
+    queryKey: ["categories-reports-list"],
     queryFn: async () => {
       const res = await api.get("/categories");
       return res.data.data.categories || [];
@@ -42,15 +42,15 @@ function ReportsPage() {
   });
 
   const { data: maintenanceData, isLoading: maintLoading } = useQuery({
-    queryKey: ["maintenance-requests"],
+    queryKey: ["maintenance-reports-list"],
     queryFn: async () => {
       const res = await api.get("/maintenance");
-      return res.data.data.requests || res.data.data || [];
+      return res.data.data.maintenanceRequests || [];
     },
   });
 
   const { data: assetsData, isLoading: assetsLoading } = useQuery({
-    queryKey: ["assets"],
+    queryKey: ["assets-reports-list"],
     queryFn: async () => {
       const res = await api.get("/assets", { params: { limit: 100 } });
       return res.data.data.assets || [];

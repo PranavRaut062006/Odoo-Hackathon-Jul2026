@@ -16,12 +16,15 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { toast } from "sonner";
 
+import { useAuth } from "@/hooks/useAuth";
+
 export const Route = createFileRoute("/_app/assets/")({
   head: () => ({ meta: [{ title: "Asset Directory · AssetFlow" }] }),
   component: AssetsPage,
 });
 
 function AssetsPage() {
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const [drawer, setDrawer] = useState(false);
   const [cat, setCat] = useState("all");
@@ -146,7 +149,9 @@ function AssetsPage() {
         description={`${mappedAssets.length} assets across ${activeDepartments.length} departments`}
         actions={<>
           <Button variant="outline"><Download className="h-4 w-4" /> Export CSV</Button>
-          <Button onClick={() => setDrawer(true)}><Plus className="h-4 w-4" /> Register asset</Button>
+          {(user?.role === "Admin" || user?.role === "Asset Manager") && (
+            <Button onClick={() => setDrawer(true)}><Plus className="h-4 w-4" /> Register asset</Button>
+          )}
         </>}
       />
 
