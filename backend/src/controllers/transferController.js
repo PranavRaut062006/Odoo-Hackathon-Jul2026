@@ -7,6 +7,7 @@ const Department = require('../models/Department');
 const ActivityLog = require('../models/ActivityLog');
 const ApiError = require('../utils/ApiError');
 const ApiResponse = require('../utils/ApiResponse');
+const { logActivity, createNotification } = require('../utils/logger');
 
 const runWithTransaction = async (workFn) => {
   const session = await mongoose.startSession();
@@ -92,6 +93,14 @@ const createTransfer = async (req, res, next) => {
       .populate('fromEmployee', '-password')
       .populate('toEmployee', '-password')
       .populate('requestedBy', '-password');
+
+    logActivity(
+      req.user._id,
+      'Transfer Requested',
+      'TransferRequest',
+      transfer._id,
+      `Transfer request for asset ${asset.assetTag || asset._id} created`
+    );
 
     res.status(201).json(
       new ApiResponse(201, populatedTransfer, 'Transfer request created successfully')
@@ -326,21 +335,23 @@ const approveTransfer = async (req, res, next) => {
         await transfer.save();
       }
 
-      await ActivityLog.create(
-        [
-          {
-            user: req.user._id,
-            action: 'APPROVE_TRANSFER',
-            entity: 'TransferRequest',
-            entityId: transfer._id,
-            description: `Transfer of asset ${asset?.assetTag || transfer.asset} to employee ${transfer.toEmployee} approved by ${req.user.name || req.user._id}`,
-            metadata: {
-              newAllocationId: newAllocation._id,
-              closedAllocationId: activeAllocation ? activeAllocation._id : null,
-            },
-          },
-        ],
-        opts
+      logActivity(
+        req.user._id,
+        'Transfer Approved',
+        'TransferRequest',
+        transfer._id,
+        `Transfer of asset ${asset?.assetTag || transfer.asset} to employee ${transfer.toEmployee} approved by ${req.user.name || req.user._id}`,
+        {
+          newAllocationId: newAllocation._id,
+          closedAllocationId: activeAllocation ? activeAllocation._id : null,
+        }
+      );
+
+      createNotification(
+        transfer.toEmployee,
+        'Transfer Approved',
+        `Your transfer request for asset ${asset?.assetTag || transfer.asset} has been approved`,
+        'Success'
       );
 
       if (session && session.inTransaction()) {
@@ -391,13 +402,20 @@ const rejectTransfer = async (req, res, next) => {
     transfer.approvedBy = req.user._id;
     await transfer.save();
 
-    await ActivityLog.create({
-      user: req.user._id,
-      action: 'REJECT_TRANSFER',
-      entity: 'TransferRequest',
-      entityId: transfer._id,
-      description: `Transfer request for asset ${transfer.asset} rejected by ${req.user.name || req.user._id}`,
-    });
+    logActivity(
+      req.user._id,
+      'Transfer Rejected',
+      'TransferRequest',
+      transfer._id,
+      `Transfer request for asset ${transfer.asset} rejected by ${req.user.name || req.user._id}`
+    );
+
+    createNotification(
+      transfer.toEmployee,
+      'Transfer Rejected',
+      `Your transfer request for asset ${transfer.asset} has been rejected`,
+      'Error'
+    );
 
     const populatedTransfer = await TransferRequest.findById(transfer._id)
       .populate({

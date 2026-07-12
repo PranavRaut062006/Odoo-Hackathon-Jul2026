@@ -6,6 +6,7 @@ const Department = require('../models/Department');
 const ActivityLog = require('../models/ActivityLog');
 const ApiError = require('../utils/ApiError');
 const ApiResponse = require('../utils/ApiResponse');
+const { logActivity, createNotification } = require('../utils/logger');
 
 const runWithTransaction = async (workFn) => {
   const session = await mongoose.startSession();
@@ -90,22 +91,24 @@ const createAllocation = async (req, res, next) => {
         await asset.save();
       }
 
-      await ActivityLog.create(
-        [
-          {
-            user: req.user._id,
-            action: 'ALLOCATE_ASSET',
-            entity: 'Allocation',
-            entityId: allocation._id,
-            description: `Asset ${asset.assetTag || asset._id} allocated to ${employee.name || employee._id} by ${req.user.name || req.user._id}`,
-            metadata: {
-              asset: asset._id,
-              employee: employee._id,
-              expectedReturnDate: allocation.expectedReturnDate,
-            },
-          },
-        ],
-        opts
+      logActivity(
+        req.user._id,
+        'Asset Allocated',
+        'Allocation',
+        allocation._id,
+        `Asset ${asset.assetTag || asset._id} allocated to ${employee.name || employee._id} by ${req.user.name || req.user._id}`,
+        {
+          asset: asset._id,
+          employee: employee._id,
+          expectedReturnDate: allocation.expectedReturnDate,
+        }
+      );
+
+      createNotification(
+        employee._id,
+        'Asset Allocated',
+        `Asset ${asset.assetTag || asset.name} has been allocated to you`,
+        'Info'
       );
 
       if (session && session.inTransaction()) {
@@ -319,21 +322,23 @@ const returnAllocation = async (req, res, next) => {
         }
       }
 
-      await ActivityLog.create(
-        [
-          {
-            user: req.user._id,
-            action: 'RETURN_ASSET',
-            entity: 'Allocation',
-            entityId: allocation._id,
-            description: `Asset ${asset?.assetTag || allocation.asset} returned by ${allocation.employee}`,
-            metadata: {
-              actualReturnDate: allocation.actualReturnDate,
-              conditionNotes: allocation.conditionNotes,
-            },
-          },
-        ],
-        opts
+      logActivity(
+        req.user._id,
+        'Asset Returned',
+        'Allocation',
+        allocation._id,
+        `Asset ${asset?.assetTag || allocation.asset} returned by ${allocation.employee}`,
+        {
+          actualReturnDate: allocation.actualReturnDate,
+          conditionNotes: allocation.conditionNotes,
+        }
+      );
+
+      createNotification(
+        allocation.employee,
+        'Asset Returned',
+        `Asset ${asset?.assetTag || allocation.asset} has been returned successfully`,
+        'Success'
       );
 
       if (session && session.inTransaction()) {

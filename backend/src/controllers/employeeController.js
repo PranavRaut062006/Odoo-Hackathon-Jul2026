@@ -4,6 +4,7 @@ const Department = require('../models/Department');
 const ApiError = require('../utils/ApiError');
 const ApiResponse = require('../utils/ApiResponse');
 const { ROLES, STATUS } = require('../constants');
+const { logActivity, createNotification } = require('../utils/logger');
 
 const getEmployees = async (req, res, next) => {
   try {
@@ -193,6 +194,21 @@ const promoteEmployee = async (req, res, next) => {
     await employee.save();
 
     const updated = await User.findById(employee._id).select('-password');
+
+    logActivity(
+      req.user._id,
+      'Role Promotion',
+      'User',
+      employee._id,
+      `User ${employee.name} was promoted to ${role}`
+    );
+
+    createNotification(
+      employee._id,
+      'Role Promoted',
+      `Your role has been updated to ${role}`,
+      'Success'
+    );
 
     res.status(200).json(
       new ApiResponse(200, updated, 'Employee role promoted successfully')

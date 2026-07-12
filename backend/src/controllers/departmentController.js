@@ -4,6 +4,7 @@ const User = require('../models/User');
 const ApiError = require('../utils/ApiError');
 const ApiResponse = require('../utils/ApiResponse');
 const { STATUS } = require('../constants');
+const { logActivity } = require('../utils/logger');
 
 const getDepartments = async (req, res, next) => {
   try {
@@ -128,6 +129,14 @@ const createDepartment = async (req, res, next) => {
     const populated = await Department.findById(department._id)
       .populate('parentDepartment', 'name code status')
       .populate('departmentHead', 'name email role status');
+
+    logActivity(
+      req.user._id,
+      'Department Created',
+      'Department',
+      department._id,
+      `Department ${department.name} was created`
+    );
 
     res.status(201).json(
       new ApiResponse(201, populated, 'Department created successfully')

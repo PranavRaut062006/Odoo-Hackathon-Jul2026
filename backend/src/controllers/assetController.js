@@ -3,6 +3,7 @@ const AssetCategory = require('../models/AssetCategory');
 const Department = require('../models/Department');
 const ApiError = require('../utils/ApiError');
 const ApiResponse = require('../utils/ApiResponse');
+const { logActivity } = require('../utils/logger');
 
 // Helper to generate the next asset tag
 const generateNextAssetTag = async () => {
@@ -61,6 +62,14 @@ const createAsset = async (req, res, next) => {
     if (asset.department) {
       await asset.populate('department', 'name code');
     }
+
+    logActivity(
+      req.user._id,
+      'Asset Created',
+      'Asset',
+      asset._id,
+      `Asset ${asset.name} (${asset.assetTag}) was registered`
+    );
 
     res.status(201).json(new ApiResponse(201, asset, 'Asset created successfully'));
   } catch (error) {
@@ -192,6 +201,14 @@ const updateAsset = async (req, res, next) => {
       .populate('category', 'name description')
       .populate('department', 'name code');
 
+    logActivity(
+      req.user._id,
+      'Asset Updated',
+      'Asset',
+      updatedAsset._id,
+      `Asset ${updatedAsset.name} (${updatedAsset.assetTag}) was updated`
+    );
+
     res.status(200).json(new ApiResponse(200, updatedAsset, 'Asset updated successfully'));
   } catch (error) {
     next(error);
@@ -209,6 +226,14 @@ const deleteAsset = async (req, res, next) => {
     // Soft Delete
     asset.status = 'Disposed';
     await asset.save();
+
+    logActivity(
+      req.user._id,
+      'Asset Deleted (Soft Delete)',
+      'Asset',
+      asset._id,
+      `Asset ${asset.name} (${asset.assetTag}) was soft deleted`
+    );
 
     res.status(200).json(new ApiResponse(200, null, 'Asset soft deleted successfully'));
   } catch (error) {

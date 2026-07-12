@@ -3,6 +3,7 @@ const AssetCategory = require('../models/AssetCategory');
 const ApiError = require('../utils/ApiError');
 const ApiResponse = require('../utils/ApiResponse');
 const { STATUS } = require('../constants');
+const { logActivity } = require('../utils/logger');
 
 const getCategories = async (req, res, next) => {
   try {
@@ -89,6 +90,14 @@ const createCategory = async (req, res, next) => {
       description: description ? description.trim() : '',
       status: status || STATUS.ACTIVE,
     });
+
+    logActivity(
+      req.user._id,
+      'Category Created',
+      'AssetCategory',
+      category._id,
+      `Category ${category.name} was created`
+    );
 
     res.status(201).json(
       new ApiResponse(201, category, 'Category created successfully')

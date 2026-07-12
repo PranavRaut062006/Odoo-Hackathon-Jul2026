@@ -10,6 +10,9 @@ const departmentRoutes = require('./routes/departmentRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const employeeRoutes = require('./routes/employeeRoutes');
 const assetRoutes = require('./routes/assetRoutes');
+const dashboardRoutes = require('./routes/dashboardRoutes');
+const activityLogRoutes = require('./routes/activityLogRoutes');
+const notificationRoutes = require('./routes/notificationRoutes');
 const allocationRoutes = require('./routes/allocationRoutes');
 const transferRoutes = require('./routes/transferRoutes');
 
@@ -32,6 +35,9 @@ app.use('/api/v1/departments', departmentRoutes);
 app.use('/api/v1/categories', categoryRoutes);
 app.use('/api/v1/employees', employeeRoutes);
 app.use('/api/v1/assets', assetRoutes);
+app.use('/api/v1/dashboard', dashboardRoutes);
+app.use('/api/v1/activity', activityLogRoutes);
+app.use('/api/v1/notifications', notificationRoutes);
 app.use('/api/v1/allocations', allocationRoutes);
 app.use('/api/v1/transfers', transferRoutes);
 
