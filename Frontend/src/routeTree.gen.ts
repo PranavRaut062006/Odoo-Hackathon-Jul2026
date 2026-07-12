@@ -12,6 +12,10 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app.index'
+import { Route as AppOrganizationRouteImport } from './routes/_app.organization'
+import { Route as AppAllocationRouteImport } from './routes/_app.allocation'
+import { Route as AppAssetsIndexRouteImport } from './routes/_app.assets.index'
+import { Route as AppAssetsIdRouteImport } from './routes/_app.assets.$id'
 
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
@@ -27,27 +31,74 @@ const AppIndexRoute = AppIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppOrganizationRoute = AppOrganizationRouteImport.update({
+  id: '/organization',
+  path: '/organization',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAllocationRoute = AppAllocationRouteImport.update({
+  id: '/allocation',
+  path: '/allocation',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAssetsIndexRoute = AppAssetsIndexRouteImport.update({
+  id: '/assets/',
+  path: '/assets/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAssetsIdRoute = AppAssetsIdRouteImport.update({
+  id: '/assets/$id',
+  path: '/assets/$id',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/login': typeof LoginRoute
+  '/allocation': typeof AppAllocationRoute
+  '/organization': typeof AppOrganizationRoute
+  '/assets/$id': typeof AppAssetsIdRoute
+  '/assets/': typeof AppAssetsIndexRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
+  '/allocation': typeof AppAllocationRoute
+  '/organization': typeof AppOrganizationRoute
   '/': typeof AppIndexRoute
+  '/assets/$id': typeof AppAssetsIdRoute
+  '/assets': typeof AppAssetsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
   '/login': typeof LoginRoute
+  '/_app/allocation': typeof AppAllocationRoute
+  '/_app/organization': typeof AppOrganizationRoute
   '/_app/': typeof AppIndexRoute
+  '/_app/assets/$id': typeof AppAssetsIdRoute
+  '/_app/assets/': typeof AppAssetsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/allocation'
+    | '/organization'
+    | '/assets/$id'
+    | '/assets/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/login' | '/'
-  id: '__root__' | '/_app' | '/login' | '/_app/'
+  to:
+    '/login' | '/allocation' | '/organization' | '/' | '/assets/$id' | '/assets'
+  id:
+    | '__root__'
+    | '/_app'
+    | '/login'
+    | '/_app/allocation'
+    | '/_app/organization'
+    | '/_app/'
+    | '/_app/assets/$id'
+    | '/_app/assets/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -78,15 +129,51 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/organization': {
+      id: '/_app/organization'
+      path: '/organization'
+      fullPath: '/organization'
+      preLoaderRoute: typeof AppOrganizationRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/allocation': {
+      id: '/_app/allocation'
+      path: '/allocation'
+      fullPath: '/allocation'
+      preLoaderRoute: typeof AppAllocationRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/assets/': {
+      id: '/_app/assets/'
+      path: '/assets'
+      fullPath: '/assets/'
+      preLoaderRoute: typeof AppAssetsIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/assets/$id': {
+      id: '/_app/assets/$id'
+      path: '/assets/$id'
+      fullPath: '/assets/$id'
+      preLoaderRoute: typeof AppAssetsIdRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
 interface AppRouteChildren {
+  AppAllocationRoute: typeof AppAllocationRoute
+  AppOrganizationRoute: typeof AppOrganizationRoute
   AppIndexRoute: typeof AppIndexRoute
+  AppAssetsIdRoute: typeof AppAssetsIdRoute
+  AppAssetsIndexRoute: typeof AppAssetsIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
+  AppAllocationRoute: AppAllocationRoute,
+  AppOrganizationRoute: AppOrganizationRoute,
   AppIndexRoute: AppIndexRoute,
+  AppAssetsIdRoute: AppAssetsIdRoute,
+  AppAssetsIndexRoute: AppAssetsIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
